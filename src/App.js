@@ -35,16 +35,22 @@ const TodoForm = ({ addTodo }) => {
   );
 };
 
-const Todo = ({ todo, index, toggleComplete }) => (
+const Todo = ({ todo, index, toggleComplete, removeTodo }) => (
   <div className="todo">
     <span
       style={{ textDecoration: todo.isCompleted ? 'line-through' : 'none' }}
     >
       {todo.text}
     </span>
-    <button type="button" onClick={() => toggleComplete(index)}>
-      {todo.isCompleted ? 'Un-complete' : 'Complete'}
-    </button>
+
+    <span className="todo-buttons">
+      <button type="button" onClick={() => toggleComplete(index)}>
+        {todo.isCompleted ? 'Un-complete' : 'Complete'}
+      </button>
+      <button onClick={() => removeTodo(index)} type="button">
+        X
+      </button>
+    </span>
   </div>
 );
 
@@ -66,11 +72,19 @@ function App() {
     );
   };
 
+  const removeTodo = index => setTodos(todos.filter((_, i) => i !== index));
+
   return (
     <div className="app">
       <div className="todo-list">
         {todos.map((t, i) => (
-          <Todo key={i} index={i} todo={t} toggleComplete={toggleComplete} />
+          <Todo
+            key={i}
+            index={i}
+            todo={t}
+            toggleComplete={toggleComplete}
+            removeTodo={removeTodo}
+          />
         ))}
 
         <TodoForm addTodo={addTodo} />

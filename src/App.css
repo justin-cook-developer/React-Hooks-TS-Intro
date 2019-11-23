@@ -28,3 +28,9 @@
   align-items: center;
   justify-content: space-between;
 }
+
+.todo-buttons {
+  flex-basis: 30%;
+  display: flex;
+  justify-content: space-between;
+}
