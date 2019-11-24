@@ -86,7 +86,6 @@ const App: React.FunctionComponent<{}> = () => {
         {todos.map((t, i) => (
           <Todo index={i} todo={t} />
         ))}
-
         <TodoForm />
       </div>
     </div>
