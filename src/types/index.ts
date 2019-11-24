@@ -1,18 +1,25 @@
 export interface todo {
-  text: string;
-  isCompleted: boolean;
+  userId: number;
+  id: number;
+  title: string;
+  completed: boolean;
 }
 
 export interface action {
   type: string;
-  index?: number;
-  text?: string;
+  id?: number;
+  todo?: todo;
+  todos?: todo[];
+}
+
+export interface addTodosAction extends action {
+  todos: todo[];
 }
 
 export interface addAction extends action {
-  text: string;
+  todo: todo;
 }
 
-export interface indexAction extends action {
-  index: number;
+export interface idAction extends action {
+  id: number;
 }

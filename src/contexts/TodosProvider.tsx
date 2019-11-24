@@ -1,7 +1,7 @@
 import React, { createContext, useReducer, useContext } from 'react';
 
-import { addAction, indexAction, todo } from '../types/index';
-import { todosReducer, initialState } from '../reducers/todos';
+import { addAction, idAction, todo, addTodosAction } from '../types/index';
+import { todosReducer } from '../reducers/todos';
 
 // Definte the context objects
 // One for state, one for updating state
@@ -10,13 +10,15 @@ const defualtTodosContext: { todos: todo[] } = { todos: [] };
 const TodosContext = createContext(defualtTodosContext);
 
 const defaultTodoMethodsContext: {
-  addTodo: (text: string) => void;
-  toggleComplete: (index: number) => void;
-  removeTodo: (index: number) => void;
+  addTodos: (todos: todo[]) => void;
+  addTodo: (todo: todo) => void;
+  toggleComplete: (id: number) => void;
+  removeTodo: (id: number) => void;
 } = {
-  addTodo(text: string): void {},
-  toggleComplete(index: number): void {},
-  removeTodo(index: number): void {},
+  addTodos: (todos: todo[]): void => {},
+  addTodo(todo: todo): void {},
+  toggleComplete(id: number): void {},
+  removeTodo(id: number): void {},
 };
 
 const TodoMethods = createContext(defaultTodoMethodsContext);
@@ -25,20 +27,25 @@ const TodoMethods = createContext(defaultTodoMethodsContext);
 const TodosProvider: React.FunctionComponent<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const [todos, dispatch] = useReducer(todosReducer, initialState);
+  const [todos, dispatch] = useReducer(todosReducer, []);
 
-  const addTodo = (text: string): void => {
-    const action: addAction = { type: 'add', text };
+  const addTodos = (todos: todo[]): void => {
+    const action: addTodosAction = { type: 'addTodos', todos };
     dispatch(action);
   };
 
-  const toggleComplete = (index: number): void => {
-    const action: indexAction = { type: 'toggle', index };
+  const addTodo = (todo: todo): void => {
+    const action: addAction = { type: 'add', todo };
     dispatch(action);
   };
 
-  const removeTodo = (index: number): void => {
-    const action: indexAction = { type: 'remove', index };
+  const toggleComplete = (id: number): void => {
+    const action: idAction = { type: 'toggle', id };
+    dispatch(action);
+  };
+
+  const removeTodo = (id: number): void => {
+    const action: idAction = { type: 'remove', id };
     dispatch(action);
   };
 
@@ -46,6 +53,7 @@ const TodosProvider: React.FunctionComponent<{
     <TodosContext.Provider value={{ todos }}>
       <TodoMethods.Provider
         value={{
+          addTodos,
           addTodo,
           toggleComplete,
           removeTodo,
@@ -72,9 +80,10 @@ const useTodosState = (): { todos: todo[] } => {
 };
 
 const useTodosMethods = (): {
-  addTodo: (text: string) => void;
-  toggleComplete: (index: number) => void;
-  removeTodo: (index: number) => void;
+  addTodos: (todos: todo[]) => void;
+  addTodo: (todo: todo) => void;
+  toggleComplete: (id: number) => void;
+  removeTodo: (id: number) => void;
 } => {
   const updateMethods = useContext(TodoMethods);
 

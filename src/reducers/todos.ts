@@ -1,37 +1,39 @@
-import { todo, addAction, indexAction } from '../types/index';
+import { todo, action } from '../types/index';
 
-export const initialState: todo[] = [
-  { text: 'Learn about React', isCompleted: false },
-  { text: 'Meet with friend for lunch', isCompleted: false },
-  { text: 'Build app for ryan!', isCompleted: false },
-];
+const defaultTodo: todo = {
+  userId: -Infinity,
+  id: -Infinity,
+  title: 'Default',
+  completed: false,
+};
 
-export let todosReducer: (
-  state: todo[],
-  action: addAction | indexAction
-) => todo[];
+export let todosReducer: (state: todo[], action: action) => todo[];
 
-todosReducer = (state: todo[], action: addAction | indexAction): todo[] => {
+todosReducer = (state: todo[], action: action): todo[] => {
   switch (action.type) {
+    case 'addTodos': {
+      return state.concat(action.todos || [defaultTodo]);
+    }
+
     case 'add': {
-      // added ` || ''` to satisfy TS
-      return [...state, { text: action.text || '', isCompleted: false }];
+      // Added default object to satisfy TS
+      return [...state, action.todo || defaultTodo];
     }
 
     case 'toggle': {
       return state.map(
-        (todo: todo, i: number): todo => {
-          if (i !== action.index) {
+        (todo: todo): todo => {
+          if (todo.id !== action.id) {
             return todo;
           } else {
-            return { ...todo, isCompleted: !todo.isCompleted };
+            return { ...todo, completed: !todo.completed };
           }
         }
       );
     }
 
     case 'remove': {
-      return state.filter((_: todo, i: number): boolean => i !== action.index);
+      return state.filter((t: todo): boolean => t.id !== action.id);
     }
 
     default:
