@@ -61,7 +61,7 @@ const TodosProvider: React.FunctionComponent<{
 const generateProviderError = (hookName: string): Error =>
   new Error(`${hookName} must be used within a TodosProvider.`);
 
-const useTodosState = () => {
+const useTodosState = (): { todos: todo[] } => {
   const todosContext = useContext(TodosContext);
 
   if (todosContext === undefined) {
@@ -71,7 +71,11 @@ const useTodosState = () => {
   return todosContext;
 };
 
-const useTodosMethods = () => {
+const useTodosMethods = (): {
+  addTodo: (text: string) => void;
+  toggleComplete: (index: number) => void;
+  removeTodo: (index: number) => void;
+} => {
   const updateMethods = useContext(TodoMethods);
 
   if (updateMethods === undefined) {
