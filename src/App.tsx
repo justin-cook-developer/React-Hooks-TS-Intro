@@ -1,8 +1,9 @@
-import React, { useState, FormEvent, ChangeEvent } from 'react';
+import React, { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 
 import './App.css';
-import { todo as _todo } from './types/index';
+import { todo } from './types/index';
 import { useTodosMethods, useTodosState } from './contexts/TodosProvider';
+import { makeTodoCall, toggleTodoCall, deleteTodoCall } from './apiCalls/index';
 
 const TodoForm: React.FunctionComponent<{}> = () => {
   const [inputVal, setInputVal] = useState('');
@@ -13,8 +14,12 @@ const TodoForm: React.FunctionComponent<{}> = () => {
 
     if (!inputVal) return;
 
-    addTodo(inputVal);
-    setInputVal('');
+    makeTodoCall(inputVal).then(([todo, err]: [todo | null, boolean]): void => {
+      if (!err && todo) {
+        addTodo(todo);
+        setInputVal('');
+      }
+    });
   };
 
   return (
@@ -42,32 +47,38 @@ const TodoForm: React.FunctionComponent<{}> = () => {
 };
 
 const Todo: React.FunctionComponent<{
-  todo: _todo;
-  index: number;
-}> = ({ todo, index }) => {
+  todo: todo;
+}> = ({ todo: { id, title, completed } }) => {
   const { toggleComplete, removeTodo } = useTodosMethods();
 
   return (
     <div className="todo">
-      <span
-        style={{ textDecoration: todo.isCompleted ? 'line-through' : 'none' }}
-      >
-        {todo.text}
+      <span style={{ textDecoration: completed ? 'line-through' : 'none' }}>
+        {title}
       </span>
 
       <span className="todo-buttons">
         <button
           type="button"
-          onClick={(_: React.MouseEvent<HTMLButtonElement, MouseEvent>): void =>
-            toggleComplete(index)
-          }
+          onClick={(
+            _: React.MouseEvent<HTMLButtonElement, MouseEvent>
+          ): void => {
+            toggleTodoCall(id, completed).then((toggled: boolean): void => {
+              if (toggled) toggleComplete(id);
+            });
+          }}
         >
-          {todo.isCompleted ? 'Un-complete' : 'Complete'}
+          {completed ? 'Un-complete' : 'Complete'}
         </button>
+
         <button
-          onClick={(_: React.MouseEvent<HTMLButtonElement, MouseEvent>): void =>
-            removeTodo(index)
-          }
+          onClick={(
+            _: React.MouseEvent<HTMLButtonElement, MouseEvent>
+          ): void => {
+            deleteTodoCall(id).then((deleted: boolean): void => {
+              if (deleted) removeTodo(id);
+            });
+          }}
           type="button"
         >
           X
@@ -78,14 +89,25 @@ const Todo: React.FunctionComponent<{
 };
 
 const App: React.FunctionComponent<{}> = () => {
-  const { todos }: { todos: _todo[] } = useTodosState();
+  const { todos }: { todos: todo[] } = useTodosState();
+  const { addTodos } = useTodosMethods();
+
+  useEffect(() => {
+    fetch('https://jsonplaceholder.typicode.com/todos')
+      .then((res): Promise<todo[]> => res.json())
+      .then((data: todo[]): void => {
+        addTodos(data);
+      });
+  }, []);
 
   return (
     <div className="app">
       <div className="todo-list">
-        {todos.map((t, i) => (
-          <Todo index={i} todo={t} />
-        ))}
+        {todos.map(
+          (t: todo, i: number): JSX.Element => (
+            <Todo key={i} todo={t} />
+          )
+        )}
         <TodoForm />
       </div>
     </div>
