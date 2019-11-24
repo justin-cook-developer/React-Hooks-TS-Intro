@@ -1,13 +1,12 @@
-import React, { useState, useReducer, FormEvent, ChangeEvent } from 'react';
+import React, { useState, FormEvent, ChangeEvent } from 'react';
 
 import './App.css';
-import { todosReducer, initialState } from './reducers/todos';
-import { addAction, indexAction, todo as _todo } from './types/index';
+import { todo as _todo } from './types/index';
+import { useTodosMethods, useTodosState } from './contexts/TodosProvider';
 
-const TodoForm: React.FunctionComponent<{
-  addTodo: (text: string) => void;
-}> = ({ addTodo }) => {
+const TodoForm: React.FunctionComponent<{}> = () => {
   const [inputVal, setInputVal] = useState('');
+  const { addTodo } = useTodosMethods();
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
@@ -45,68 +44,50 @@ const TodoForm: React.FunctionComponent<{
 const Todo: React.FunctionComponent<{
   todo: _todo;
   index: number;
-  toggleComplete: (index: number) => void;
-  removeTodo: (index: number) => void;
-}> = ({ todo, index, toggleComplete, removeTodo }) => (
-  <div className="todo">
-    <span
-      style={{ textDecoration: todo.isCompleted ? 'line-through' : 'none' }}
-    >
-      {todo.text}
-    </span>
+}> = ({ todo, index }) => {
+  const { toggleComplete, removeTodo } = useTodosMethods();
 
-    <span className="todo-buttons">
-      <button
-        type="button"
-        onClick={(_: React.MouseEvent<HTMLButtonElement, MouseEvent>): void =>
-          toggleComplete(index)
-        }
+  return (
+    <div className="todo">
+      <span
+        style={{ textDecoration: todo.isCompleted ? 'line-through' : 'none' }}
       >
-        {todo.isCompleted ? 'Un-complete' : 'Complete'}
-      </button>
-      <button
-        onClick={(_: React.MouseEvent<HTMLButtonElement, MouseEvent>): void =>
-          removeTodo(index)
-        }
-        type="button"
-      >
-        X
-      </button>
-    </span>
-  </div>
-);
+        {todo.text}
+      </span>
+
+      <span className="todo-buttons">
+        <button
+          type="button"
+          onClick={(_: React.MouseEvent<HTMLButtonElement, MouseEvent>): void =>
+            toggleComplete(index)
+          }
+        >
+          {todo.isCompleted ? 'Un-complete' : 'Complete'}
+        </button>
+        <button
+          onClick={(_: React.MouseEvent<HTMLButtonElement, MouseEvent>): void =>
+            removeTodo(index)
+          }
+          type="button"
+        >
+          X
+        </button>
+      </span>
+    </div>
+  );
+};
 
 const App: React.FunctionComponent<{}> = () => {
-  const [todos, dispatch] = useReducer(todosReducer, initialState);
-
-  const addTodo = (text: string): void => {
-    const action: addAction = { type: 'add', text };
-    dispatch(action);
-  };
-
-  const toggleComplete = (index: number): void => {
-    const action: indexAction = { type: 'toggle', index };
-    dispatch(action);
-  };
-
-  const removeTodo = (index: number): void => {
-    const action: indexAction = { type: 'remove', index };
-    dispatch(action);
-  };
+  const { todos }: { todos: _todo[] } = useTodosState();
 
   return (
     <div className="app">
       <div className="todo-list">
         {todos.map((t, i) => (
-          <Todo
-            index={i}
-            todo={t}
-            toggleComplete={toggleComplete}
-            removeTodo={removeTodo}
-          />
+          <Todo index={i} todo={t} />
         ))}
 
-        <TodoForm addTodo={addTodo} />
+        <TodoForm />
       </div>
     </div>
   );
