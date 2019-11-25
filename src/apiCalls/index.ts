@@ -31,7 +31,7 @@ export const toggleTodoCall = async (
   completed: boolean
 ): Promise<boolean> => {
   try {
-    await fetch(`${baseUrl}${id}`, {
+    await fetch(`${baseUrl}/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ completed: !completed }),
       headers: {
@@ -47,7 +47,7 @@ export const toggleTodoCall = async (
 
 export const deleteTodoCall = async (id: number): Promise<boolean> => {
   try {
-    await fetch(`${baseUrl}${id}`, {
+    await fetch(`${baseUrl}/${id}`, {
       method: 'DELETE',
     });
 

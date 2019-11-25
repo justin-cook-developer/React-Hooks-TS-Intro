@@ -1,15 +1,33 @@
 import React, { useState, FormEvent, ChangeEvent, useEffect } from 'react';
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonCheckbox,
+  IonButton,
+  IonInput,
+  IonGrid,
+  IonRow,
+} from '@ionic/react';
 
 import './App.css';
 import { todo } from './types/index';
 import { useTodosMethods, useTodosState } from './contexts/TodosProvider';
 import { makeTodoCall, toggleTodoCall, deleteTodoCall } from './apiCalls/index';
+import { InputChangeEventDetail, CheckboxChangeEventDetail } from '@ionic/core';
 
 const TodoForm: React.FunctionComponent<{}> = () => {
   const [inputVal, setInputVal] = useState('');
   const { addTodo } = useTodosMethods();
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = (
+    e: React.MouseEvent<HTMLIonButtonElement, MouseEvent>
+  ): void => {
     e.preventDefault();
 
     if (!inputVal) return;
@@ -23,26 +41,17 @@ const TodoForm: React.FunctionComponent<{}> = () => {
   };
 
   return (
-    <form className="todo-form" onSubmit={handleSubmit}>
-      <label htmlFor="todo">
-        <input
-          type="text"
-          id="todo"
-          className="input"
-          placeholder="Enter a todo..."
-          value={inputVal}
-          onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-            setInputVal(e.target.value)
-          }
-        />
-      </label>
+    <IonItem>
+      <IonInput
+        onIonChange={(e: CustomEvent<InputChangeEventDetail>): void => {
+          setInputVal(e.detail.value || '');
+        }}
+        placeholder="Enter a todo..."
+        value={inputVal}
+      />
 
-      <label htmlFor="submit">
-        <button id="submit" type="submit">
-          Add Todo
-        </button>
-      </label>
-    </form>
+      <IonButton onClick={handleSubmit}>Add Todo</IonButton>
+    </IonItem>
   );
 };
 
@@ -52,39 +61,42 @@ const Todo: React.FunctionComponent<{
   const { toggleComplete, removeTodo } = useTodosMethods();
 
   return (
-    <div className="todo">
-      <span style={{ textDecoration: completed ? 'line-through' : 'none' }}>
-        {title}
-      </span>
+    <IonItem>
+      <IonCheckbox
+        slot="start"
+        checked={completed}
+        onIonChange={(_: CustomEvent<CheckboxChangeEventDetail>): void => {
+          toggleTodoCall(id, completed).then((toggled: boolean): void => {
+            if (toggled) toggleComplete(id);
+          });
+        }}
+      />
 
-      <span className="todo-buttons">
-        <button
-          type="button"
-          onClick={(
-            _: React.MouseEvent<HTMLButtonElement, MouseEvent>
-          ): void => {
-            toggleTodoCall(id, completed).then((toggled: boolean): void => {
-              if (toggled) toggleComplete(id);
-            });
-          }}
-        >
-          {completed ? 'Un-complete' : 'Complete'}
-        </button>
+      <IonButton
+        slot="end"
+        color="danger"
+        style={{ zIndex: '300' }}
+        onClick={(
+          ev: React.MouseEvent<HTMLIonButtonElement, MouseEvent>
+        ): void => {
+          console.log('clicked');
 
-        <button
-          onClick={(
-            _: React.MouseEvent<HTMLButtonElement, MouseEvent>
-          ): void => {
-            deleteTodoCall(id).then((deleted: boolean): void => {
-              if (deleted) removeTodo(id);
-            });
-          }}
-          type="button"
-        >
-          X
-        </button>
-      </span>
-    </div>
+          ev.stopPropagation();
+
+          deleteTodoCall(id).then((deleted: boolean): void => {
+            if (deleted) removeTodo(id);
+          });
+        }}
+      >
+        Delete
+      </IonButton>
+
+      <IonLabel>
+        <h1 style={{ textDecoration: completed ? 'line-through' : 'none' }}>
+          {title}
+        </h1>
+      </IonLabel>
+    </IonItem>
   );
 };
 
@@ -101,16 +113,27 @@ const App: React.FunctionComponent<{}> = () => {
   }, []);
 
   return (
-    <div className="app">
-      <div className="todo-list">
-        {todos.map(
-          (t: todo, i: number): JSX.Element => (
-            <Todo key={i} todo={t} />
-          )
-        )}
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>A basic to-do list</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+
+      <div>
         <TodoForm />
       </div>
-    </div>
+
+      <IonContent>
+        <IonList>
+          {todos.map(
+            (t: todo, i: number): JSX.Element => (
+              <Todo key={i} todo={t} />
+            )
+          )}
+        </IonList>
+      </IonContent>
+    </IonPage>
   );
 };
 
